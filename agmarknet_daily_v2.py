@@ -203,46 +203,52 @@ def run_main(group_commodity,commodity,month,year,day):
         refresh()
         refresh_f=1
 
-table=connect_db()
-m_date = table.find_one(sort=[('Date', -1)])
+fn=0
+while fn==0:
+  try:
+    table=connect_db()
+    m_date = table.find_one(sort=[('Date', -1)])
 
-if m_date is not None:
-    min_date = m_date['Date'] - timedelta(days=5)
-else:
-    min_date = datetime(int(start_year), int(start_month), int(start_day))
+    if m_date is not None:
+        min_date = m_date['Date'] - timedelta(days=5)
+    else:
+        min_date = datetime(int(start_year), int(start_month), int(start_day))
 
-# For MongoDB
-date_seq=date_sequence(min_date,datetime.today())
-refresh_f=1
-refresh_n=0
-date_index=0
-file_index=0
-for d in date_seq:
-  refresh_f=1
-  refresh_n=0
-  # Extract individual components
-  month = d.strftime("%B")
-  year = d.strftime("%Y")
-  day = d.strftime("%d")
-  while refresh_f==1 and refresh_n<=3:
-    run_main(group_commodity,commodity,month,year,day)
-    refresh_n=refresh_n+1
-  if refresh_n<=3:
-    date_index=date_index+1
-    res=scrape_table()
-    try:
-      data=output_data(res)
-      data['Date']=d
-      data['Last_Refresh_Date']=datetime.now()
-    except:
-      print(f"No data found for {d}")
-      data = pd.DataFrame({'Date':[d]})
-    data_list = data.to_dict(orient='records')
-    table.insert_many(data_list)
-    print(f"Data Loaded: {d}")
-    try:
-      go_back_button()
-    except:
-      refresh()
+    # For MongoDB
+    date_seq=date_sequence(min_date,datetime.today())
+    refresh_f=1
+    refresh_n=0
+    date_index=0
+    file_index=0
+    for d in date_seq:
+      refresh_f=1
+      refresh_n=0
+      # Extract individual components
+      month = d.strftime("%B")
+      year = d.strftime("%Y")
+      day = d.strftime("%d")
+      while refresh_f==1 and refresh_n<=3:
+        run_main(group_commodity,commodity,month,year,day)
+        refresh_n=refresh_n+1
+      if refresh_n<=3:
+        date_index=date_index+1
+        res=scrape_table()
+        try:
+          data=output_data(res)
+          data['Date']=d
+          data['Last_Refresh_Date']=datetime.now()
+        except:
+          print(f"No data found for {d}")
+          data = pd.DataFrame({'Date':[d]})
+        data_list = data.to_dict(orient='records')
+        table.insert_many(data_list)
+        print(f"Data Loaded: {d}")
+        try:
+          go_back_button()
+        except:
+          refresh()
 
-delete_duplicate(table)
+    delete_duplicate(table)
+    fn=1
+  except:
+    time.sleep(900)
