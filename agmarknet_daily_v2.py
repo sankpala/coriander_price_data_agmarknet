@@ -24,11 +24,11 @@ import os
 mongo_db = os.environ.get("mongo_db")
 mongo_table = os.environ.get("mongo_table")
 mongo_url = os.environ.get("mongo_url")
-start_day = 18
-start_month = 12
-start_year = 2020
+start_day = 1
+start_month = 1
+start_year = 2010
 group_commodity = 'Vegetables'
-commodity = 'Onion'
+commodity = 'Coriander(Leaves)'
 
 options = webdriver.ChromeOptions()
 options.add_argument('--headless')
